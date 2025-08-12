@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"runtime/debug"
@@ -27,8 +28,13 @@ func (app *application) render(w http.ResponseWriter, r *http.Request, name stri
 		app.serverError(w, fmt.Errorf("the template %s does not exits", name))
 	}
 
-	err := ts.Execute(w, td)
+	buf := new(bytes.Buffer)
+
+	err := ts.Execute(buf, td)
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
+
+	buf.WriteTo(w)
 }

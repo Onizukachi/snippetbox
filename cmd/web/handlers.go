@@ -54,29 +54,31 @@ func (app *application) createSnippet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	title := r.PostForm.Get("title")
-	content := r.PostForm.Get("context")
+	content := r.PostForm.Get("content")
 	expires := r.PostForm.Get("expires")
 
 	errors := make(map[string]string)
 
 	if strings.TrimSpace(title) == "" {
-		errors[title] = "This field cannot be blank"
+		errors["title"] = "This field cannot be blank"
 	} else if utf8.RuneCountInString(title) > 100 {
-		errors[title] = "This field is too long (maximum is 100 characters)"
+		errors["title"] = "This field is too long (maximum is 100 characters)"
 	}
 
 	if strings.TrimSpace(content) == "" {
-		errors[content] = "This field cannot be blank"
+		errors["content"] = "This field cannot be blank"
 	}
 
 	if strings.TrimSpace(expires) == "" {
-		errors[expires] = "This field cannot be blank"
+		errors["expires"] = "This field cannot be blank"
 	} else if expires != "365" && expires != "7" && expires != "1" {
-		errors[expires] = "This field is invalid"
+		errors["expires"] = "This field is invalid"
 	}
 
+	fmt.Println(errors)
 	if len(errors) > 0 {
 		data := &templateData{FormErrors: errors, FormData: r.PostForm}
+
 		app.render(w, r, "create.page.tmpl", data)
 		return
 	}

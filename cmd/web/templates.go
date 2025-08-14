@@ -2,6 +2,7 @@ package main
 
 import (
 	"html/template"
+	"net/url"
 	"path/filepath"
 	"time"
 
@@ -9,6 +10,8 @@ import (
 )
 
 type templateData struct {
+	FormErrors  map[string]string
+	FormData    url.Values
 	Snippet     *models.Snippet
 	Snippets    []*models.Snippet
 	CurrentYear int

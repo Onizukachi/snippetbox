@@ -3,7 +3,6 @@ package mysql
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/Onizukachi/snippetbox/pkg/models"
@@ -28,7 +27,6 @@ func (m *UserModel) Insert(name, email, password string) error {
 	if err != nil {
 		var mySQLError *mysql.MySQLError
 		if errors.As(err, &mySQLError) {
-			fmt.Println("AS ")
 			if mySQLError.Number == 1062 && strings.Contains(mySQLError.Message, "users_uc_email") {
 				return models.ErrDuplicateEmail
 			}
@@ -41,7 +39,23 @@ func (m *UserModel) Insert(name, email, password string) error {
 }
 
 func (m *UserModel) Authenticate(email, password string) (int, error) {
-	return 0, nil
+	user := models.User{}
+	stm := "SELECT id, name, email, hashed_password, created, active FROM users where email = ? and active = true"
+	err := m.DB.QueryRow(stm, email).Scan(&user.ID, &user.Name, &user.Email, &user.HashedPassword, &user.Created, &user.Active)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, models.ErrInvalidCredentials
+		} else {
+			return 0, err
+		}
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(password))
+	if err != nil {
+		return 0, models.ErrInvalidCredentials
+	}
+
+	return user.ID, nil
 }
 
 func (m *UserModel) Get(id int) (*models.User, error) {

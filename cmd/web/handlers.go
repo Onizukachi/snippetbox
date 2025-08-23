@@ -123,18 +123,19 @@ func (app *application) loginUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	form := forms.New(r.PostForm)
-	_, err = app.users.Authenticate(form.Get("email"), form.Get("password"))
+	id, err := app.users.Authenticate(form.Get("email"), form.Get("password"))
 	if err != nil {
 		if errors.Is(err, models.ErrInvalidCredentials) {
-			form.Errors.Add("generic", err.Error())
+			form.Errors.Add("generic", "Email or Password is incorrect")
 			app.render(w, r, "login.page.tmpl", &templateData{Form: form})
-			return
 		} else {
 			app.serverError(w, err)
-			return
 		}
+
+		return
 	}
 
+	app.session.Put(r, "authenticatedUserID", id)
 	app.session.Put(r, "flash", "You login successfull")
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

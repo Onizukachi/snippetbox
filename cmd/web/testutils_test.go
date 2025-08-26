@@ -7,12 +7,28 @@ import (
 	"net/http/cookiejar"
 	"net/http/httptest"
 	"testing"
+	"time"
+
+	"github.com/Onizukachi/snippetbox/pkg/models/mock"
+	"github.com/golangcollege/sessions"
 )
 
-func newTestApplication() *application {
+func newTestApplication(t *testing.T) *application {
+	session := sessions.New([]byte("3dSm5MnygFHh7XidAtbskXrjbwfoJcbJ"))
+	session.Lifetime = 12 * time.Hour
+
+	templateCache, err := newTemplateCache("./../../ui/html")
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	return &application{
-		infoLog:  log.New(io.Discard, "", 0),
-		errorLog: log.New(io.Discard, "", 0),
+		infoLog:       log.New(io.Discard, "", 0),
+		errorLog:      log.New(io.Discard, "", 0),
+		session:       session,
+		snippets:      &mock.SnippetModel{},
+		users:         &mock.UserModel{},
+		templateCache: templateCache,
 	}
 }
 

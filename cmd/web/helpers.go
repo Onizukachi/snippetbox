@@ -29,11 +29,10 @@ func (app *application) addDefaultData(td *templateData, r *http.Request) *templ
 	if td == nil {
 		td = &templateData{}
 	}
-
-	td.CSRFToken = nosurf.Token(r)
-	td.IsAuthenticated = app.isAuthenticated(r)
-	td.Flash = app.session.PopString(r, "flash")
 	td.CurrentYear = time.Now().Year()
+	td.Flash = app.session.PopString(r, "flash")
+	td.IsAuthenticated = app.isAuthenticated(r)
+	td.CSRFToken = nosurf.Token(r)
 	return td
 }
 
@@ -59,6 +58,5 @@ func (app *application) isAuthenticated(r *http.Request) bool {
 	if !ok {
 		return false
 	}
-
 	return isAuthenticated
 }
